@@ -1,5 +1,6 @@
 import cv2
 
+#Сохранение видео файла
 cap = cv2.VideoCapture('MyInputVid.avi')
 fps = cap.get(cv2.CAP_PROP_FPS)
 size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
@@ -8,6 +9,7 @@ success, frame = cap.read()
 while success:
     videoWriter.write(frame)
     success, frame = cap.read()
+# Проигрывание видео файла
 # if(cap.isOpened()==False):
 #     print('Error opening video stream or file')
 #
