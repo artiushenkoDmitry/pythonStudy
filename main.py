@@ -5,6 +5,7 @@ from Script_file.dataPath import DATA_PATH
 
 imagePath = DATA_PATH + "images/number_zero.jpg"
 testImage = cv2.imread(imagePath, cv2.IMREAD_COLOR)
+glassImage = cv2.imread("./data/images/sunglass.png", cv2.IMREAD_UNCHANGED)
 muskImage = cv2.imread("./data/images/musk.jpg")
 pantherImage = cv2.imread("./data/images/panther.png", cv2.IMREAD_UNCHANGED)
 boyImage = cv2.imread("./data/images/boy.jpg")
@@ -86,6 +87,7 @@ boyImage = cv2.imread("./data/images/boy.jpg")
 # plt.imshow(imgBGR[:,:,::-1])
 # plt.imshow(imgMask, cmap='gray')
 # plt.show()
+
 
 # Basic image operations
 # Create new image
@@ -223,3 +225,75 @@ boyImage = cv2.imread("./data/images/boy.jpg")
 # plt.subplot(132);plt.imshow(brightHighFloat32NormalizedClipped[...,::-1]);plt.title("Using np.float32 and clipping")
 # plt.subplot(133);plt.imshow(brightHighFloat32NormalizedClippedUint8[...,::-1]);plt.title("Using int->float->int and clipping")
 # plt.show()
+
+# Sunglass filter
+muskImage = np.float32(muskImage)/255
+
+# Load the Sunglass image with Alpha channel
+glassImage = np.float32(glassImage)/255
+
+# Resize the image to fit over the eye region
+glassImage = cv2.resize(glassImage, None, fx=0.5, fy=0.5)
+glassHeight, glassWidth, nChannels = glassImage.shape
+print("Sunglass dimension ={}".format(glassImage.shape))
+
+# Separate the Color and alpha channels
+glassBGR = glassImage[:,:,0:3]
+glassMask1 = glassImage[:,:,3]
+
+# Display the images for clarity
+# plt.figure(figsize=[15,15])
+# plt.subplot(121);plt.imshow(glassBGR[:,:,::-1]);plt.title('Sunglass Color channels');
+# plt.subplot(122);plt.imshow(glassMask1,cmap='gray');plt.title('Sunglass Alpha channel');
+# plt.show()
+
+# Top left corner of the glasses
+topLeftRow = 130
+topLeftCol = 130
+
+bottomRightRow = topLeftRow + glassHeight
+bottomRightCol = topLeftCol + glassWidth
+
+# Make a copy
+faceWithGlassesNaive = muskImage.copy()
+
+# # Replace the eye region with the sunglass image
+# faceWithGlassesNaive[topLeftRow:bottomRightRow,topLeftCol:bottomRightCol]=glassBGR
+# plt.imshow(faceWithGlassesNaive[...,::-1])
+# plt.show()
+
+# Using Arithmetic Operations
+# Make the dimensions of the mask same as the input image.
+# Since Face Image is a 3-channel image, we create a 3 channel image for the mask
+glassMask = cv2.merge((glassMask1,glassMask1,glassMask1))
+
+# Make a copy
+faceWithGlassesArithmetic = muskImage.copy()
+
+# Get the eye region from the face image
+eyeROI= faceWithGlassesArithmetic[topLeftRow:bottomRightRow,topLeftCol:bottomRightCol]
+
+# Use the mask to create the masked eye region
+maskedEye = cv2.multiply(eyeROI,(1 -  glassMask ))
+
+# Use the mask to create the masked sunglass region
+maskedGlass = cv2.multiply(glassBGR, glassMask)
+
+# Combine the Sunglass in the Eye Region to get the augmented image
+eyeRoiFinal = cv2.add(maskedEye, maskedGlass)
+
+# # Display the intermediate results
+# plt.figure(figsize=[20,20])
+# plt.subplot(131);plt.imshow(maskedEye[...,::-1]);plt.title("Masked Eye Region")
+# plt.subplot(132);plt.imshow(maskedGlass[...,::-1]);plt.title("Masked Sunglass Region")
+# plt.subplot(133);plt.imshow(eyeRoiFinal[...,::-1]);plt.title("Augmented Eye and Sunglass")
+# plt.show()
+
+# Replace the eye ROI with the output from the previous section
+faceWithGlassesArithmetic[topLeftRow:bottomRightRow,topLeftCol:bottomRightCol]= eyeRoiFinal
+
+# Display the final result
+plt.figure(figsize=[20,20]);
+plt.subplot(121);plt.imshow(muskImage[:,:,::-1]); plt.title("Original Image");
+plt.subplot(122);plt.imshow(faceWithGlassesArithmetic[:,:,::-1]);plt.title("With Sunglasses");
+plt.show()
