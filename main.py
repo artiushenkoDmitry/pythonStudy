@@ -7,8 +7,9 @@ imagePath = DATA_PATH + "images/number_zero.jpg"
 testImage = cv2.imread(imagePath, cv2.IMREAD_COLOR)
 glassImage = cv2.imread("./data/images/sunglass.png", cv2.IMREAD_UNCHANGED)
 muskImage = cv2.imread("./data/images/musk.jpg")
-pantherImage = cv2.imread("./data/images/panther.png", cv2.IMREAD_UNCHANGED)
+pantherImage = cv2.imread("data/images/panther.png", cv2.IMREAD_UNCHANGED)
 boyImage = cv2.imread("./data/images/boy.jpg")
+mustacheImage = cv2.imread("./data/images/pngegg.png", cv2.IMREAD_UNCHANGED)
 
 # image is a matrix
 # testImage = cv2.imread(imagePath, cv2.IMREAD_GRAYSCALE)
@@ -229,6 +230,16 @@ boyImage = cv2.imread("./data/images/boy.jpg")
 # Sunglass filter
 muskImage = np.float32(muskImage)/255
 
+# Mustache filter
+mustacheImage = np.float32(mustacheImage) / 255
+mustacheImage = cv2.resize(mustacheImage, (150, 55), interpolation=cv2.INTER_LINEAR)
+mustacheHeight, mustacheWidth, mustacheChannels = mustacheImage.shape
+
+# Separate the Color and alpha channels
+mustacheBGR = mustacheImage[:, :, 0:3]
+mustacheMask1 = mustacheImage[:, :, 3]
+mustacheMask = cv2.merge((mustacheMask1, mustacheMask1, mustacheMask1))
+
 # Load the Sunglass image with Alpha channel
 glassImage = np.float32(glassImage)/255
 
@@ -273,14 +284,23 @@ faceWithGlassesArithmetic = muskImage.copy()
 # Get the eye region from the face image
 eyeROI= faceWithGlassesArithmetic[topLeftRow:bottomRightRow,topLeftCol:bottomRightCol]
 
+# Get the mustache region from face image
+mustacheROI = faceWithGlassesArithmetic[250:305, 215:365]
+
 # Use the mask to create the masked eye region
-maskedEye = cv2.multiply(eyeROI,(1 -  glassMask ))
+maskedEye = cv2.multiply(eyeROI, (1 - glassMask))
+
+maskedLips = cv2.multiply(mustacheROI, 1 - mustacheMask)
 
 # Use the mask to create the masked sunglass region
 maskedGlass = cv2.multiply(glassBGR, glassMask)
 
+maskedMustache = cv2.multiply(mustacheBGR, mustacheMask)
+
 # Combine the Sunglass in the Eye Region to get the augmented image
 eyeRoiFinal = cv2.add(maskedEye, maskedGlass)
+
+mustacheROIFinal = cv2.add(maskedLips, maskedMustache)
 
 # # Display the intermediate results
 # plt.figure(figsize=[20,20])
@@ -291,9 +311,17 @@ eyeRoiFinal = cv2.add(maskedEye, maskedGlass)
 
 # Replace the eye ROI with the output from the previous section
 faceWithGlassesArithmetic[topLeftRow:bottomRightRow,topLeftCol:bottomRightCol]= eyeRoiFinal
+faceWithGlassesArithmetic[250:305, 215:365]= mustacheROIFinal
+
 
 # Display the final result
-plt.figure(figsize=[20,20]);
-plt.subplot(121);plt.imshow(muskImage[:,:,::-1]); plt.title("Original Image");
-plt.subplot(122);plt.imshow(faceWithGlassesArithmetic[:,:,::-1]);plt.title("With Sunglasses");
+# plt.figure(figsize=[20,20]);
+# plt.subplot(121);plt.imshow(muskImage[:,:,::-1]); plt.title("Original Image");
+# plt.subplot(122);plt.imshow(faceWithGlassesArithmetic[:,:,::-1]);plt.title("With Sunglasses");
+# plt.show()
+
+
+plt.figure(figsize=[20, 20]);
+plt.subplot(121);plt.imshow(muskImage[:, :, ::-1]);plt.title("Original Image");
+plt.subplot(122);plt.imshow(faceWithGlassesArithmetic[:, :, ::-1]);plt.title("With Sunglasses");
 plt.show()
