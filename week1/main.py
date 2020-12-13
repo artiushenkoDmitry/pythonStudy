@@ -1,15 +1,15 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from Script_file.dataPath import DATA_PATH
+from week1.Script_file.dataPath import DATA_PATH
 
 imagePath = DATA_PATH + "images/number_zero.jpg"
 testImage = cv2.imread(imagePath, cv2.IMREAD_COLOR)
-glassImage = cv2.imread("./data/images/sunglass.png", cv2.IMREAD_UNCHANGED)
-muskImage = cv2.imread("./data/images/musk.jpg")
+glassImage = cv2.imread("data/images/sunglass.png", cv2.IMREAD_UNCHANGED)
+muskImage = cv2.imread("data/images/musk.jpg")
 pantherImage = cv2.imread("data/images/panther.png", cv2.IMREAD_UNCHANGED)
-boyImage = cv2.imread("./data/images/boy.jpg")
-mustacheImage = cv2.imread("./data/images/pngegg.png", cv2.IMREAD_UNCHANGED)
+boyImage = cv2.imread("data/images/boy.jpg")
+mustacheImage = cv2.imread("data/images/pngegg.png", cv2.IMREAD_UNCHANGED)
 
 # image is a matrix
 # testImage = cv2.imread(imagePath, cv2.IMREAD_GRAYSCALE)
@@ -322,6 +322,6 @@ faceWithGlassesArithmetic[250:305, 215:365]= mustacheROIFinal
 
 
 plt.figure(figsize=[20, 20]);
-plt.subplot(121);plt.imshow(muskImage[:, :, ::-1]);plt.title("Original Image");
+plt.subplot(121);plt.imshow(maskedEye[:, :, ::-1]);plt.title("Original Image");
 plt.subplot(122);plt.imshow(faceWithGlassesArithmetic[:, :, ::-1]);plt.title("With Sunglasses");
 plt.show()
